@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 import { MainContainer, ChatContainer, MessageList, Message, MessageInput, TypingIndicator } from "@chatscope/chat-ui-kit-react";
+import axios from "axios";
+import stopwords from './stopwords';
+import clothingSet from './fashionkeywords';
 
-const API_KEY = "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";
+
+const API_KEY = "1f38974303mshd6e14d884ce909fp1a50f6jsnb816a2be044a"; // Update with your API key
 
 class FashionAssistant extends Component {
   constructor(props) {
@@ -11,10 +15,12 @@ class FashionAssistant extends Component {
       typing: false,
       messages: [
         {
-          message: "Hello, I am ChatGPT",
-          sender: "ChatGPT"
+          message: `Hello, This is your Stylist In Chief, Reporting for Duty :)`,
+          sender: "Stylist"
         }
-      ]
+      ],
+      productsData:[],
+      filteredArray:[]
     };
   }
 
@@ -27,94 +33,177 @@ class FashionAssistant extends Component {
       direction: "outgoing"
     };
 
-    const newMessages = [...messages, newMessage];
+
+
+    await this.processMessageToChatGPT(message);
+  }
+
+  processMessageToChatGPT = async (userMessage) => {
+    const { messages } = this.state;
+
+    const newUserMessage = {
+      message: userMessage,
+      sender: "user",
+      direction: "outgoing"
+    };
+
+    const newMessages = [...messages, newUserMessage]; // Add the user's message
     this.setState({ messages: newMessages, typing: true });
 
-    await this.processMessageToChatGPT(newMessages);
-  }
-
-  processMessageToChatGPT = async (chatMessages) => {
-    let apiMessages = chatMessages.map((messageObject) => {
-      let role = "";
-      if (messageObject.sender === "ChatGPT") {
-        role = "assistant";
-      } else {
-        role = "user";
-      }
-      return { role: role, content: messageObject.message };
-    });
-
-    const systemMessage = {
-      role: "system",
-      content: "Explain everything as if I need Fashion Suggestions and I am based in India."
-    };
-
-    const apiRequestBody = {
-      "model": "gpt-3.5-turbo",
-      "messages": [
-        systemMessage,
-        ...apiMessages
-      ]
-    };
-
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + API_KEY,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(apiRequestBody)
-    });
-
-    const data = await response.json();
-    if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
-        const { messages } = this.state;
-        const newChatMessages = [
-          ...messages,
-          {
-            message: data.choices[0].message.content,
-            sender: "ChatGPT"
-          }
-        ];
-      
-        this.setState({ messages: newChatMessages, typing: false });
-      } else {
-        // Handle the case when the data is not as expected
-      }
     
+    const options = {
+      method: 'POST',
+      url: 'https://open-ai21.p.rapidapi.com/conversationllama',
+      headers: {
+        'content-type': 'application/json',
+        'X-RapidAPI-Key': API_KEY,
+        'X-RapidAPI-Host': 'open-ai21.p.rapidapi.com'
+      },
+      data: {
+        messages: [
+          {
+            role: 'user',
+            content: userMessage // Use the user's message here
+          }
+        ],
+        web_access: false
+      }
+    };
+
+    
+    try {
+      const response = await axios.request(options);
+     console.log(response.data);
+      const assistantMessage=response.data.LLAMA;
+      const newAssistantMessage = {
+        message: assistantMessage,
+        sender: 'ChatGPT',
+        direction: 'incoming',
+      };
+      const finalResponse=[...newMessages,newAssistantMessage];
+      this.setState({messages:finalResponse,typing:false});
+
+      const myresponse=assistantMessage.split(' ');
+      const cleanWords = myresponse.map(word => word.replace(/[^a-zA-Z0-9]/g, '').toLowerCase());
+      
+        // Remove common stopwords (e.g., "the", "and", "is", etc.)
+        
+        const keywords = cleanWords.filter(word => !stopwords.has(word));
+
+        // Count the frequency of each keyword
+        const keywordCounts = {};
+        keywords.forEach(keyword => {
+            keywordCounts[keyword] = (keywordCounts[keyword] || 0) + 1;
+        });
+
+        console.log(keywordCounts);
+
+
+      
+
+        let lowercaseClothingSet = new Set();
+    
+        clothingSet.forEach(item => {
+          lowercaseClothingSet.add(item.toLowerCase());
+        });
+
+        const filter=keywords.filter(element=>lowercaseClothingSet.has(element));
+        this.setState({filteredArray:filter});
+        console.log(filter);
+        const finalApparel=filter.filter((item,index)=> filter.indexOf(item)==index)
+        //removing repeating elements 
+        let p=3;
+        const productsData = await Promise.all(finalApparel.map(async keyword => {
+          try {
+            const response = await axios.get(`https://flipkart-scraper-api.dvishal485.workers.dev/search/${keyword}`);
+            
+            const productData = response.data.result[p++];
+            
+            console.log(productData);
+            return productData;
+          } catch (error) {
+            console.error('Error fetching product data:', error);
+            return null; // Handle the error gracefully
+          }
+        }));
+    
+        this.setState({ productsData });
+        
+    
+    } catch (error) {
+      console.error(error);
+    }
   }
 
+  
   render() {
-    const { typing, messages } = this.state;
+    const { typing, messages,productsData} = this.state;
 
     return (
-        <div className='FashionAssistant' style={{backgroundColor:"#EDEADE"}}>
-        <div style={{ position: "relative", height: "700px", width: "800px" }}>
-          <MainContainer className='MainContainer'>
-            <div className='Header'>Fashion Assistant Chat</div>
-            <ChatContainer className='ChatContainer' style={{width:"40em"}}>
+      <div className='FashionAssistant' style={{marginRight:"0em",width:"80em"}}>
+       
+        <div style={{ position: "relative", height: "700px", width: "600px" }}>
+          
+          <MainContainer className='MainContainer' >
+      
+            <ChatContainer className='ChatContainer' style={{width:"30em"}}>
               <MessageList
                 scrollBehavior='smooth'
-                typingIndicator={typing ? <TypingIndicator content="ChatGPT is Typing" /> : null}
+                typingIndicator={typing ? <TypingIndicator content="Chief is Typing" style={{marginBottom:"0"}}/> : null}
                 className='MessageList'
+                style={{marginBottom:"0",height:"1000em"}}
               >
                 {messages.map((message, i) => (   
-                          <Message key={i} model={message} className={message.sender === "ChatGPT" ? 'AssistantMessage' : 'UserMessage'} />
+                  <Message
+                    key={i}
+                    model={message}
+                    className={message.sender === "ChatGPT" ? 'AssistantMessage' : 'UserMessage'}
+                  />
                 ))}
               </MessageList>
               <MessageInput placeholder='Type Message Here' onSend={this.handleSend} className='MessageInput' />
             </ChatContainer>
           </MainContainer>
         </div>
-        <div >
-          <h1>See what's Trending on Instagram</h1>
-          <div class="pic-ctn" style={{width:"40em",marginRight:"0em", marginTop:"0em"}}>
-            <img src="https://picsum.photos/200/300?t=1" alt="" class="pic"/>
-            <img src="https://picsum.photos/200/300?t=2" alt="" class="pic"/>
-            <img src="https://picsum.photos/200/300?t=3" alt="" class="pic"/>
-            <img src="https://picsum.photos/200/300?t=4" alt="" class="pic"/>
-            <img src="https://picsum.photos/200/300?t=5" alt="" class="pic"/>
-          </div>
+        <div className='Trending' style={{width:"100em"}}>
+          
+          {
+            productsData.length==0?(
+              <div>
+                <h1 style={{marginLeft:"2.5em",color:"#047BD5",fontSize:"50px"}}>See what's Trending on Instagram</h1>
+              <div class="pic-ctn" style={{marginLeft:"-20em", marginTop:"5em"}}>
+              <img src="https://picsum.photos/200/300?t=1" alt="" class="pic" style={{width:"20em",height:"18em"}}/>
+              <img src="https://picsum.photos/200/300?t=2" alt="" class="pic"style={{width:"20em",height:"18em"}}/>
+              <img src="https://picsum.photos/200/300?t=3" alt="" class="pic"style={{width:"20em",height:"18em"}}/>
+              <img src="https://picsum.photos/200/300?t=4" alt="" class="pic"style={{width:"20em",height:"18em"}}/>
+              <img src="https://picsum.photos/200/300?t=5" alt="" class="pic"style={{width:"20em",height:"18em"}}/>
+
+              </div> 
+              <h1 style={{marginLeft:"3em",marginTop:"2em",color:"#047BD5"}}>Chief is selecting some great picks for you!</h1>
+              <div class="spinner-border text-danger" style={{marginLeft:"30em"}} role="status">
+                <span class="sr-only">Loading...</span>
+              </div>
+              </div>
+              
+            ):(
+              <div className="pic-ctn" style={{display:"flex",flexWrap:"wrap",marginTop:"2em",justifyContent:"center",paddingBottom:"2em"}}>
+              {productsData.map((product, index) => (
+                
+                <div class="card" key={index} style={{marginRight:"2em",width:"18em",height:"12em",marginTop:"2em",marginBottom:"9em"}}>
+                <img class="card-img-top" src={product.thumbnail} style={{width:"17em",height:"12em"}} alt={product.name} />
+                <div class="card-body">
+                  <h5 class="card-title" style={{color:"black"}}>{product.name}</h5>
+                  <p class="card-text"> ₹{product.current_price}</p>
+                  <a href={product.link} class="btn btn-primary">View Product on Flipkart</a>
+                </div>
+              </div>
+              ))}
+            </div>
+            )
+          }
+          
+
+          
         </div>
       </div>
     );
@@ -122,3 +211,4 @@ class FashionAssistant extends Component {
 }
 
 export default FashionAssistant;
+

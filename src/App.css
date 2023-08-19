@@ -13,9 +13,11 @@
   }
 }
 
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
+  /* width: 100vw; */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -118,7 +120,9 @@ body {
   background-image: url(./47cacda8-b694-49ab-8b74-0d1d5c61da2b.jpg);
   font-family: 'Open Sans', sans-serif;
   padding: 0;
-  margin:0;
+  margin-bottom:2em;
+  width:90em;
+  height: 100vh;
 }
 
 .container {
@@ -239,46 +243,10 @@ svg {
 .FashionAssistant {
   font-family: Arial, sans-serif;
   display: flex;
+  
+
 }
 
-.ChatContainer{
-  background-color: #ed1717;
-  border: #24b211;
-}
-.Header {
-  background-color: #b4b9bd;
-  color: white;
-  padding: 10px;
-  font-size: 18px;
-}
-
-.MessageList {
-  max-height: 400px;
-  overflow-y: scroll;
-  padding: 10px;
-  justify-content: center;
-}
-
-.AssistantMessage {
-  background-color: #1b3bbd;
-  padding: 8px;
-  border-radius: 8px;
-  margin: 5px 0;
-}
-
-.UserMessage {
-  background-color: #43e014;
-  padding: 8px;
-  border-radius: 8px;
-  margin: 5px 0;
-}
-
-.MessageInput {
-  border: 1px solid #ea1717;
-  border-radius: 8px;
-  padding: 8px;
-  margin-top: 10px;
-}
 
 /* Additional styling can be added here */
 
@@ -404,3 +372,160 @@ img:nth-child(4) {
 img:nth-child(5) {
   animation-delay: 8s;
 }
+.FashionAssistant{
+  background-image: url(https://cdn.pixabay.com/photo/2015/11/09/23/02/background-1036112_1280.png);
+}
+/*navbar*/
+.Trending{
+  background-color: #F8E831;
+  margin-right: 0;
+  font-family: 'Lily Script One';
+ 
+}
+
+/*typing effect*/
+.typing-container {
+  display: flex;
+  height: 100vh;
+  margin: -1em;
+
+}
+
+.typing-text {
+  font-size: 40px;
+  color: #ebe6e3;
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: 'Raleway', sans-serif;
+  width: 0;
+ 
+  animation: typing 3s steps(30, end) infinite, blink-caret 0.75s step-end infinite;
+}
+
+.unleashbox {
+  background-color: #F8E831; /* Banana yellow color */
+  width: 300px;
+  height:250px;
+  padding: 20px;
+  border-radius: 20px;
+  border-color: rgb(9, 10, 10);
+  border:3px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.unleashbox-text {
+  font-size: 40px;
+  color: #333;
+}
+
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink-caret {
+  from, to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: #333;
+  }
+}
+
+
+/* api*/
+.card-row-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.product card {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 18em;
+  height: 12em;
+}
+
+
+.product card-body {
+  padding-bottom: 4em;
+}
+
+.product card-title {
+  font-size: 1.25rem;
+  margin: 5px 0;
+}
+
+.product card-text {
+  font-size: 1rem;
+  color: #1e2673;
+}
+
+/*before call*/
+@import 'https://fonts.googleapis.com/css?family=Lily+Script+One';
+body {
+  /* background: #eee; */
+  font-family: 'Lily Script One';
+}
+
+.cards {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300px;
+  height: 300px;
+  
+  margin-left:8em;
+  align-items: center;
+  float: left;
+  perspective: 500px;
+}
+
+.content {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+
+  transition: transform 1s;
+  transform-style: preserve-3d;
+}
+
+.cards:hover .content {
+  transform: rotateY( 180deg ) ;
+  transition: transform 0.5s;
+}
+
+.front,
+.back {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background: white;
+  line-height: 300px;
+  color: #03446A;
+  text-align: center;
+  font-size: 30px;
+  border-radius: 5px;
+  backface-visibility: hidden;
+}
+
+.back {
+  background: #03446A;
+  color: white;
+  transform: rotateY( 180deg );
+}
+
+
+
+
+

@@ -8,7 +8,7 @@ export default class Carousel extends Component {
       const rowOutfits = outfits.slice(i, i + 3);
 
       rows.push(
-        <div className="row"  key={`row-${i}`}>
+        <div className="row"  key={`row-${i}`} style={{marginTop:"3em"}}>
           {rowOutfits.map((outfit, index) => (
             <div className="card" style={{width:"14em",backgroundColor:"#100e17"}}key={`outfit-${i + index}`}>
               <a href={outfit.link}><img style={{width:"13em",height:"17.5em",display:"block"}}src={outfit.image} alt="clothes" /></a>

@@ -5,28 +5,35 @@ import Navbar from './Components/Navbar';
 import Carousel from './Components/Carousel';
 import FashionAssistant from './Components/FashionAssistant';
 import Stylist from './Components/Stylist';
-import AutoTypingTextAnimation from './Components/AutoTyping';
+import TypingEffect from './Components/AutoTyping';
+
 function App() {
   const strings = [
     "Elevate Your Style with AI Powered Suggestions",
   ];
   return (
    <BrowserRouter>
-   <>
-      <Navbar />
-   </>
+       <Navbar />
       <Routes style={{display:"flex"}}>
         <Route path="/" element={
           <>
-            <AutoTypingTextAnimation strings={strings}/>
+           <TypingEffect/>
             <Carousel/>
           
             <Stylist/>
           </>
         }/>
         <Route path="/bot" element={
+          <>
+
             <FashionAssistant/>
+          </>
+          
         }/>
+       
+          
+  
+        
       
       </Routes>
    </BrowserRouter>
